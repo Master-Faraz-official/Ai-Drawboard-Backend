@@ -5,6 +5,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const API_KEY = process.env.API_KEY;
 
 
+
 async function analyzeImage(imagePath, context = "no context provided by the user") {
     try {
         const fileManager = new GoogleAIFileManager(API_KEY);
