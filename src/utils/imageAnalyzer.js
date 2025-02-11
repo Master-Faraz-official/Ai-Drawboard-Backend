@@ -1,14 +1,10 @@
-import 'dotenv/config';
 import { GoogleAIFileManager } from "@google/generative-ai/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Prompt } from "../constants.js";
 
-const API_KEY = process.env.API_KEY;
-
-
-
-async function analyzeImage(imagePath, context = "no context provided by the user") {
+const analyzeImage = async (imagePath, context = "no context provided by the user") => {
     try {
-        const fileManager = new GoogleAIFileManager(API_KEY);
+        const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY);
 
         // Upload the image to Google AI
         const uploadResult = await fileManager.uploadFile(imagePath, {
@@ -19,11 +15,11 @@ async function analyzeImage(imagePath, context = "no context provided by the use
         console.log(`✅ Uploaded file: ${uploadResult.file.displayName}`);
         console.log(`📌 File URI: ${uploadResult.file.uri}`);
 
-        const genAI = new GoogleGenerativeAI(API_KEY);
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        // Define the analysis prompt
-
+        // Prompt with context
+        const prompt = `${Prompt} \n And here is the context of image provided by the user, Based on this context you have to solve the problem : ${context}.`
 
         // Send request to Gemini
         const result = await model.generateContent([
@@ -36,7 +32,6 @@ async function analyzeImage(imagePath, context = "no context provided by the use
             },
         ]);
 
-        console.log("\n\n");
 
         // Extract and clean up response text
         let rawResponse = result.response.text().trim();
@@ -57,8 +52,4 @@ async function analyzeImage(imagePath, context = "no context provided by the use
     }
 }
 
-// Run the function with the specified image and context
-
-// analyzeImage("/home/faraz/Pictures/gemini/tree.jpeg");
-
-analyzeImage("/home/faraz/Pictures/gemini/tree.jpeg", "Find the length of the shadow casted by the tree on the ground using pythagorous theorem");
+export default analyzeImage;
