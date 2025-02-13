@@ -5,8 +5,18 @@ import connectDB from "./database/db.js";
 const PORT = process.env.PORT;
 
 // Connect to Database
-connectDB();
+connectDB()
+    .then(() => {
+        // Event Error handling 
+        app.on('error', (err) => {
+            console.error("Express Server Error: ", err);
+        });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+    })
+    .catch((err) => {
+        console.Error("MongoDB Connection Failed: ", err);
+    })
+
