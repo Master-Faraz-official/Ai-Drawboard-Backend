@@ -2,6 +2,7 @@ import express from "express";
 import analyzeRouter from "./routes/analyze.routes.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import userRouter from "./routes/user.routes.js";
 
 const app = express()
 
@@ -12,11 +13,11 @@ app.use(cors({
 }))
 
 // We are accepting json data and setting limit 
-app.use(express.json({limit: '50mb'}))
+app.use(express.json({ limit: '50mb' }))
 
 // We are setting the cookie parser for accessing or setting the browser cookies
 app.use(cookieParser())
- 
+
 app.use((req, res, next) => {
     console.log("global Middleware running")
     next()
@@ -24,7 +25,11 @@ app.use((req, res, next) => {
 
 app.get('/', (req, res) => {
     res.send('home route')
-})
+}) 
+
+
+// Routes
+app.use("/api/users", userRouter)
 
 app.use("/drawboard", analyzeRouter)
 

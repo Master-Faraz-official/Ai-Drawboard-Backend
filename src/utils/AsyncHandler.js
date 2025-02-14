@@ -3,7 +3,7 @@
 // This is just a wrapper function 
 
 const asyncHandler = (fun) => {
-    async (req, res, next) => {
+    return async (req, res, next) => {
         try {
             await fun(req, res, next)
 
@@ -17,4 +17,4 @@ const asyncHandler = (fun) => {
     }
 }
 
-export { asyncHandler }
+export default asyncHandler 
