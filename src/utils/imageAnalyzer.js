@@ -12,8 +12,8 @@ const analyzeImage = async (imagePath, context = "no context provided by the use
             displayName: "Uploaded Image",
         });
 
-        console.log(`✅ Uploaded file: ${uploadResult.file.displayName}`);
-        console.log(`📌 File URI: ${uploadResult.file.uri}`);
+        // console.log(`✅ Uploaded file: ${uploadResult.file.displayName}`);
+        // console.log(`📌 File URI: ${uploadResult.file.uri}`);
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -45,7 +45,7 @@ const analyzeImage = async (imagePath, context = "no context provided by the use
             console.error("❌ Error parsing response:", error);
         }
 
-        console.log("🤖 Gemini Response:", answers);
+        // console.log("🤖 Gemini Response:", answers);
         return answers;
     } catch (error) {
         console.error("❌ Error analyzing image:", error);

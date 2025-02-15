@@ -17,12 +17,7 @@ app.use(express.json({ limit: '50mb' }))
 
 // We are setting the cookie parser for accessing or setting the browser cookies
 app.use(cookieParser())
-
-app.use((req, res, next) => {
-    console.log("global Middleware running")
-    next()
-})
-
+ 
 app.get('/', (req, res) => {
     res.send('home route')
 }) 

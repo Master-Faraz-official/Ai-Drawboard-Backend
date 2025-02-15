@@ -1,7 +1,14 @@
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/AsyncHandler.js";
-import { User } from "../models/user.model.js"
 import ApiResponse from "../utils/ApiResponse.js";
+import { User } from "../models/user.model.js"
+import jwt from "jsonwebtoken";
+
+// Creating options so that only server can access the token
+const options = {
+    httpOnly: true,
+    secure: true
+}
 
 const generateAccessAndRefreshToken = async (uid) => {
     try {
@@ -23,6 +30,43 @@ const generateAccessAndRefreshToken = async (uid) => {
         throw new ApiError(500, "Something went wrong while generating tokens")
     }
 }
+
+const refreshAccessTokenController = asyncHandler(async (req, res) => {
+    // Getting the refresh token from cookies in browser and in body from mobile
+    const incommingRefreshToken = await req.cookies.refreshToken || req.body.refreshToken
+
+    if (!incommingRefreshToken) {
+        throw new ApiError(401, "Unauthorized user")
+    }
+
+    try {
+        // Verify refresh token
+        const decodedToken = await jwt.verify(incommingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+
+        // Getting the user  from db
+        const user = await User.findById(decodedToken?._id)
+
+        if (!user) { throw new ApiError(401, "Invalid Refresh Token") }
+
+        // checking if both refresh token is same or not 
+        if (incommingRefreshToken !== user?.refreshToken) {
+            throw new ApiError(401, "Refresh token is Either Expired or Used")
+        }
+
+        // If everything is good then we generate the new access and refresh token and save it
+
+        const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user?._id)
+
+        return res
+            .status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", refreshToken, options)
+            .json(new ApiResponse(200, { accessToken, refreshToken }, "Token Refreshed Successfully"))
+    } catch (error) {
+        throw new ApiError(500, `Error while refreshing Tokens :: ${error?.message || ""}`)
+    }
+
+})
 
 const registerUserController = asyncHandler(async (req, res) => {
 
@@ -90,13 +134,8 @@ const loginController = asyncHandler(async (req, res) => {
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
 
     // Getting the updated user after refresh token is added w/o pass and refToken
-    const loggedInUser = User.findById(user._id).select("-password -refreshToken")
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
 
-    // Creating options so that only server can access the token
-    const options = {
-        httpOnly: true,
-        secure: true
-    }
 
     // Here we are accessing cookies using Cookie-Parser middleware in app.js
     return res
@@ -120,10 +159,7 @@ const logoutController = asyncHandler(async (req, res) => {
         req?.user._id,
         {
             // MongoDb operator to set the refresh token to undefined
-            $set: {
-                refreshToken: undefined
-            }
-
+            $set: { refreshToken: undefined }
         },
         {
             // In response we get the updated value of it
@@ -131,17 +167,11 @@ const logoutController = asyncHandler(async (req, res) => {
         }
     )
 
-    // Creating options so that only server can access the token
-    const options = {
-        httpOnly: true,
-        secure: true
-    }
-
-    // Clearing the tokens from users too 
+    // Clearing the tokens from cookies 
     return res
         .status(200)
-        .cookie("accessToken", options)
-        .cookie("refreshToken", options)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
         .json(new ApiResponse(
             200,
             {},
@@ -149,4 +179,4 @@ const logoutController = asyncHandler(async (req, res) => {
         ))
 })
 
-export { registerUserController, loginController, logoutController }
+export { registerUserController, loginController, logoutController, refreshAccessTokenController }
