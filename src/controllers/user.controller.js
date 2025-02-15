@@ -3,25 +3,45 @@ import asyncHandler from "../utils/AsyncHandler.js";
 import { User } from "../models/user.model.js"
 import ApiResponse from "../utils/ApiResponse.js";
 
+const generateAccessAndRefreshToken = async (uid) => {
+    try {
+        // getting user
+        const user = await User.findById(uid)
+
+        // generating access and refresh token
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+
+        // Setting the refresh token in user and update the db 
+        user.refreshToken = refreshToken
+        await user.save({ validateBeforeSave: false })
+
+        // returning the access and refresh token
+        return { accessToken, refreshToken }
+
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while generating tokens")
+    }
+}
+
 const registerUserController = asyncHandler(async (req, res) => {
 
     // Extracting user details  
     const { username, email, password } = req.body
 
     // Validation 
-    if (
-        [username, email, password].some((field) => {
-            field?.trim() === ""
-        })
-    ) {
-        throw new ApiError(400, "All fields are required")
+    if ([username, email, password].some((field) => field?.trim() === "")) {
+        throw new ApiError(400, "All fields are required");
     }
 
     // Checking if user already exist or not 
-    const existedUser = User.findOne({ email })
+    const existedUser = await User.findOne({ email })
 
     if (existedUser) {
-        throw new ApiError(40 9, "Email already exists")
+        // const err = new ApiError(409, "Email already exists")
+        // res.status(409).json(err)
+
+        throw new ApiError(409, "Email already exists")
     }
 
     // Creating user in  DB
@@ -40,4 +60,93 @@ const registerUserController = asyncHandler(async (req, res) => {
     )
 })
 
-export default registerUserController
+const loginController = asyncHandler(async (req, res) => {
+    // Extracting user details
+    const { email, password } = req.body
+
+    // Validation 
+    if (!email) {
+        throw new ApiError(400, "Email is required")
+    }
+    if (!password) {
+        throw new ApiError(400, "Password is required")
+    }
+
+    // check if user exists or not 
+
+    const user = await User.findOne({ email })
+
+    if (!user) {
+        throw new ApiError(404, "User doesn't exists")
+    }
+
+    const isPasswordValid = await user.isPasswordVerified(password)
+
+    if (!isPasswordValid) {
+        throw new ApiError(401, "Invalid Credentials")
+    }
+
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
+
+    // Getting the updated user after refresh token is added w/o pass and refToken
+    const loggedInUser = User.findById(user._id).select("-password -refreshToken")
+
+    // Creating options so that only server can access the token
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    // Here we are accessing cookies using Cookie-Parser middleware in app.js
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(new ApiResponse(
+            200,
+            {
+                user: loggedInUser, accessToken, refreshToken
+            },
+            "User Logged in successfully "
+        ))
+
+})
+
+const logoutController = asyncHandler(async (req, res) => {
+    // As we are using VerifyJWT middleware in the routes where we inject user in req so we can access it here
+    // Now we can remove Refresh token from server so that we can logout
+    await User.findByIdAndUpdate(
+        req?.user._id,
+        {
+            // MongoDb operator to set the refresh token to undefined
+            $set: {
+                refreshToken: undefined
+            }
+
+        },
+        {
+            // In response we get the updated value of it
+            new: true
+        }
+    )
+
+    // Creating options so that only server can access the token
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    // Clearing the tokens from users too 
+    return res
+        .status(200)
+        .cookie("accessToken", options)
+        .cookie("refreshToken", options)
+        .json(new ApiResponse(
+            200,
+            {},
+            "User Logged out successfully "
+        ))
+})
+
+export { registerUserController, loginController, logoutController }

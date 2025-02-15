@@ -13,11 +13,11 @@ class ApiError extends Error {
   {
     // Calling parent constructor of base Error class.
     super(message);
-    this.status = statusCode;
+    this.statusCode = statusCode;
     this.data = null;
     this.errors = errors;
     this.message = message;
-    this.succes = false;
+    this.success = false;
 
     if (stack) {
       this.stack = stack;
