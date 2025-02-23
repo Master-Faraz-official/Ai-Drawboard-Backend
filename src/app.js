@@ -17,11 +17,6 @@ app.use(express.json({ limit: '50mb' }))
 
 // We are setting the cookie parser for accessing or setting the browser cookies
 app.use(cookieParser())
- 
-app.get('/', (req, res) => {
-    res.send('home route')
-}) 
-
 
 // Routes
 app.use("/api/users", userRouter)

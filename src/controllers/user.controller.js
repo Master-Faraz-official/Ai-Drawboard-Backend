@@ -72,7 +72,7 @@ const registerUserController = asyncHandler(async (req, res) => {
 
     // Extracting user details  
     const { username, email, password } = req.body
-
+    
     // Validation 
     if ([username, email, password].some((field) => field?.trim() === "")) {
         throw new ApiError(400, "All fields are required");
