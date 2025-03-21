@@ -7,7 +7,13 @@ import jwt from "jsonwebtoken";
 // Creating options so that only server can access the token
 const options = {
     httpOnly: true,
-    secure: true
+    secure: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+}
+
+const logoutOptions = {
+    httpOnly: true,
+    secure: true,
 }
 
 const generateAccessAndRefreshToken = async (uid) => {
@@ -72,7 +78,7 @@ const registerUserController = asyncHandler(async (req, res) => {
 
     // Extracting user details  
     const { username, email, password } = req.body
-    
+
     // Validation 
     if ([username, email, password].some((field) => field?.trim() === "")) {
         throw new ApiError(400, "All fields are required");
@@ -170,8 +176,8 @@ const logoutController = asyncHandler(async (req, res) => {
     // Clearing the tokens from cookies 
     return res
         .status(200)
-        .clearCookie("accessToken", options)
-        .clearCookie("refreshToken", options)
+        .clearCookie("accessToken", logoutOptions)
+        .clearCookie("refreshToken", logoutOptions)
         .json(new ApiResponse(
             200,
             {},
@@ -179,4 +185,35 @@ const logoutController = asyncHandler(async (req, res) => {
         ))
 })
 
-export { registerUserController, loginController, logoutController, refreshAccessTokenController }
+const getUserController = asyncHandler(async (req, res) => {
+    //  extracting the token
+    const token = await req.cookies.accessToken || req.body.accessToken
+
+    if (!token) {
+        throw new ApiError(401, "Unauthorized user")
+    }
+
+    try {
+        // Verify the access token
+        const verifiedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+
+        // Getting the user  from db
+        const user = await User.findById(verifiedToken?._id).select("-password -refreshToken -createdAt -updatedAt -__v")
+
+        if (!user) { throw new ApiError(401, "Invalid Access Token") }
+
+
+        res.status(200).json(
+            new ApiResponse(200, { user }, "User fetched successfully")
+        );
+
+
+    } catch (error) {
+        throw new ApiError(401, `Invalid or expired access token: ${error.message}`);
+
+    }
+
+})
+
+export { registerUserController, loginController, logoutController, refreshAccessTokenController, getUserController }

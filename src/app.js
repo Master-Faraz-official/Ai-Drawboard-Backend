@@ -28,6 +28,6 @@ app.use(cookieParser())
 // Routes
 app.use("/api/users", userRouter)
 
-app.use("/drawboard", analyzeRouter)
+app.use("/api", analyzeRouter)
 
 export default app

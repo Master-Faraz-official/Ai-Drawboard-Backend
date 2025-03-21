@@ -4,7 +4,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
 const analyzeController = asyncHandler(async (req, res) => {
-    const { imagePath, context } = req.body;
+    const { imagePath, context } = await req.body;
 
     // Validate input
     if (!imagePath) {
