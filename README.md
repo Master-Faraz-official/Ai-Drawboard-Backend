@@ -1,74 +1,79 @@
+
 # 🧠 AI Drawboard Backend
 
-![License](https://img.shields.io/badge/license-ISC-blue)
 ![Node.js](https://img.shields.io/badge/node.js-18.x-green)
 
-This is the backend service for the **AI Drawboard** application. It powers features like user authentication and image analysis using Google Generative AI. The backend is built with **Node.js**, **Express**, and **MongoDB**.
+This is the backend service for the **AI Drawboard** application, which enables features like user authentication and image analysis using **Google Generative AI**. Built with **Node.js**, **Express**, and **MongoDB**, it follows a modular and scalable architecture.
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
-- 🔐 **User Authentication** — Register, login, logout, and refresh tokens via JWT.
-- 🖼️ **Image Analysis** — Analyze images using Google Generative AI.
-- 🛡️ **Secure APIs** — Auth middleware and centralized error handling.
-- 💾 **Database Integration** — MongoDB for storing user data.
-- 🧱 **Modular Architecture** — Scalable and maintainable folder structure.
+- 🔐 **User Authentication** — Secure login, registration, logout, and token refreshing via JWT.
+- 🖼️ **Image Analysis** — Integrates Google Generative AI for image-based insights.
+- 🛡️ **Secure APIs** — Includes authentication middleware and centralized error handling.
+- 💾 **Database Integration** — Stores user data using MongoDB.
+- 🧱 **Modular Architecture** — Clean and maintainable codebase for scalability.
 
 ---
 
-## 🛠️ Installation
+## 🛠️ Getting Started
 
-1. **Clone the repository**:
-   ```bash
-   git clone <repository-url>
-   cd backend
-   ```
+### 1. Clone the Repository
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+```bash
+git clone <repository-url>
+cd backend
+```
 
-3. **Configure environment variables**:  
-   Create a `.env` file in the root directory or use the provided `.env.example` as a reference.
+### 2. Install Dependencies
 
-   Example:
-   ```env
-   PORT=5000
-   MONGODB_URI=your_mongo_uri
-   JWT_SECRET=your_jwt_secret
-   GOOGLE_API_KEY=your_google_api_key
-   ```
+```bash
+npm install
+```
 
-4. **Start the development server**:
-   ```bash
-   npm run dev
-   ```
+### 3. Set Up Environment Variables
+
+Create a `.env` file in the root directory. Use `.env.example` as a reference:
+
+```env
+PORT=5000
+MONGODB_URI=your_mongodb_uri
+JWT_SECRET=your_jwt_secret
+GOOGLE_API_KEY=your_google_api_key
+```
+
+### 4. Start the Development Server
+
+```bash
+npm run dev
+```
 
 ---
 
 ## 📡 API Endpoints
 
-### 👤 User Routes
+### 👤 User Authentication
 
 | Method | Endpoint                    | Description              |
 |--------|-----------------------------|--------------------------|
 | POST   | `/api/users/register`       | Register a new user      |
-| POST   | `/api/users/login`          | Login a user             |
+| POST   | `/api/users/login`          | Login with credentials   |
 | POST   | `/api/users/refresh-token`  | Refresh access token     |
 | POST   | `/api/users/logout`         | Logout a user            |
-| GET    | `/api/users/getuser`        | Get user details (secure)|
+| GET    | `/api/users/getuser`        | Fetch user details (auth)|
 
-### 🔍 Analyze Routes
+### 🔍 Image Analysis
 
-| Method | Endpoint         | Description                |
-|--------|------------------|----------------------------|
-| POST   | `/api/analyze`   | Analyze image (secure)     |
+| Method | Endpoint         | Description                  |
+|--------|------------------|------------------------------|
+| POST   | `/api/analyze`   | Analyze image (auth required)|
 
 ---
 
-## 📦 Example API Request
+## 🧪 Example Request
+
+### Login
 
 ```http
 POST /api/users/login
@@ -95,23 +100,21 @@ Content-Type: application/json
 
 ## 🧰 Tech Stack
 
-- **Backend Framework**: Express.js  
+- **Framework**: Express.js  
 - **Database**: MongoDB  
-- **Authentication**: JSON Web Tokens (JWT)  
+- **Authentication**: JWT (JSON Web Tokens)  
 - **AI Integration**: Google Generative AI  
-- **Utilities**: `bcryptjs`, `cookie-parser`, `dotenv`  
+- **Utilities**: `bcryptjs`, `cookie-parser`, `dotenv`
 
 ---
 
 ## ❗ Error Handling
 
-Custom `ApiError` and `AsyncHandler` utilities provide consistent and informative error responses.
+Includes custom `ApiError` and `AsyncHandler` utilities to deliver consistent and descriptive error responses across all routes.
 
 ---
 
-## 🧪 Testing
-
-Run tests using:
+## 🧪 Running Tests
 
 ```bash
 npm test
@@ -119,27 +122,18 @@ npm test
 
 ---
 
-## 🚀 Deployment
+## 🚀 Deployment Options
 
-To deploy this app, you can use:
+This project can be easily deployed to:
 
 - [Render](https://render.com/)
 - [Railway](https://railway.app/)
 - [Heroku](https://heroku.com/)
-- Or deploy on a custom VPS
-
----
-
-## 📄 License
-
-This project is licensed under the **ISC License**.
+- Or your own VPS
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome!  
-Please fork the repository and submit a pull request for any improvements or bug fixes.
-
----
-
+We welcome contributions!  
+Feel free to fork this repository and submit a pull request for any feature enhancements or bug fixes.
